@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Type Ahead 👀</title>
+    <link rel="stylesheet" href="style.css" />
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.min.js"
+      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <form class="search-form">
+      <input type="text" class="search" placeholder="City or State" />
+      <ul class="suggestions">
+        <li>Filter for a city</li>
+        <li>or a state</li>
+      </ul>
+    </form>
+    <script>
+      const endpoint =
+        "https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json";
+
+      const cities = [];
+
+      fetch(endpoint)
+        .then(data => data.json())
+        .then(data => cities.push(...data));
+
+      function findMatches(wordToMatch, cities) {
+        return cities.filter(place => {
+          //unique filter call back that figures out if the city or state matches what was searched (looping through all cities)
+          const regexVariable = new RegExp(wordToMatch, "gi");
+          return (
+            place.city.match(regexVariable) || place.state.match(regexVariable)
+          );
+        });
+      }
+
+      function displayHLMatch() {
+        console.log(this.value);
+        const matchArray = findMatches(this.value, cities);
+
+        const html = matchArray
+          .map(place => {
+            const regexHighlight = RegExp(this.value, "gi");
+            const hlCityName = place.city.replace(regexHighlight, `<span class="hl">${this.value}</span>`)
+            const hlStateName = place.state.replace(regexHighlight, `<span class="hl">${this.value}</span>`)
+
+
+
+            return ` 
+          <li> 
+            <span class="cityName"> ${hlCityName}, ${hlStateName}</span>
+            <span class="population"> Population: ${place.population}</span>
+            <span class="rank"> Rank: ${place.rank}</span>
+          </li> `;
+          })
+          .join("");
+
+        cityList.innerHTML = html;
+      }
+
+      $(".search").keyup(displayHLMatch);
+      // $(".search").change(displayHLMatch);
+      const cityList = document.querySelector(".suggestions");
+    </script>
+  </body>
+</html>
